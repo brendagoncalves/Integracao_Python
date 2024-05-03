@@ -1,0 +1,21 @@
+
+{
+  "database_login": {
+    "Driver":"{DRIVER}",
+    "Server":"SERVER",
+    "User":"USER",
+    "Password":"PASSWORD"
+  }, 
+
+  "Email_config": {
+        "Email_sender": "brenda.teste@gmail.com",
+        "Email_receiver": "brenda.teste@gmail.com",
+        "Password_sender": "xxxxxxxxxxxxx"
+  }
+
+
+
+
+}
+
+
