@@ -8,22 +8,10 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-import get_data_count as cd
+from get_data_count import count_dt
 import connection as c
 
-
-def dimension_formated_update():
-      with pyodbc.connect(c.conn) as cnx:
-            cursor = cnx.cursor()
-            sql = f"""
-            UPDATE planilha_leads_semanal
-            SET domain = SUBSTRING(domain , 0, CharIndex('#', domain) )
-            UPDATE planilha_leads_semanal
-            SET domain = replace(domain , '.teste.com/', '')
-            """
-            cursor.execute(sql)
-
-            print('Dados formatados')
+from date_calculate import dt_start, dt_end, dt_today
 
 def export_xlsx():
 
@@ -41,20 +29,21 @@ def export_xlsx():
                                             Base_01..Segment (nolock) seg on seg.SegmentID = ii.SegmentID """, conn_sql)
 
 
+
             output = io.BytesIO()
             writer = pd.ExcelWriter(output, engine='xlsxwriter')
             df.to_excel(writer, sheet_name='Sheet1')
             writer.save()
             output.seek(0)
 
-            count_dt = cd.data_count()
 
             send_from = c.Email_sender
-            gmail_pwd = c.Password_sender
+            gmail_pwd = c.Email_password
             send_to = c.Email_receiver
-            subject = 'Base Lead Diário'
+            subject = f"Analytics - Lead Semanal: {dt_today} "
+            periodo = f"{dt_start} a {dt_end}"
             body = f"""
-                    <p><b>Data Extração&nbsp;................:</b> {cd.period} </p>
+                    <p><b>Período&nbsp;..........................:</b> { dt_end if dt_start == dt_end else periodo } </p>
                     <p><b>Quantidade Instalações:</b>   {count_dt} </p> """
 
             report_name = "planilha_leads_semanal.xlsx"
