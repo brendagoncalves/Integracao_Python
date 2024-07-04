@@ -22,7 +22,7 @@ def export_xlsx():
                                     distinct
                                           ii.UserID, ii.Cnpj, b.Domain, Company, ii.Name, seg.Name [Segment], Phone, ii.Email
                                          from
-                                             Base_01..planilha_leads_semanal b
+                                             Base_01..InstallFilterDomain b
                                          inner join
                                            Base_01..UserTable (nolock) ii on ii.Domain = b.Domain
                                          inner join
