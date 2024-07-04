@@ -1,3 +1,3 @@
 
-E:\brenda\integration_analytics\integration_analytics\Scripts\activate|python E:\brenda\integration_analytics\main.py
+E:\teste\integration_analytics\venv\Scripts\activate|python E:\teste\integration_analytics\main.py
 
