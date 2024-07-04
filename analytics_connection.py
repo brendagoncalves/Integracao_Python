@@ -1,16 +1,15 @@
 
-from ast import parse
-from itertools import count
-import string
-from time import strptime
 from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
 import httplib2
 import pandas as pd
 import pyodbc
-import json 
+import json
 import connection as co
-from date_calculate import dt_start
+from date_calculate import dt_start, dt_end
+
+import urllib
+from sqlalchemy import create_engine
 
 
 #Create service credentials
@@ -24,14 +23,14 @@ service = build('analytics', 'v4', http=http, discoveryServiceUrl=('https://anal
 response = service.reports().batchGet(
 
     body ={
-    'reportRequests':  [{'viewId': '77788874',
-            'dateRanges': [{'startDate': dt_start, 'endDate': 'yesterday'}],
-            'dimensions': [{'name': 'ga:pagePath'}],                                   
+    'reportRequests':  [{'viewId': '***********',
+            'dateRanges': [{'startDate': '2023-06-01', 'endDate': 'today'}],
+            'dimensions': [{'name': 'ga:pagePath'}],
             'metrics': [{'expression':'ga:pageviews'}],
 
-            "filtersExpression":'ga:pagePath=@signature/xxxxxxx,ga:pagePath=@signature/xxxxxxx,ga:pagePath=@signature/xxxxxxx,ga:pagePath=@signature/xxxxxxx,ga:pagePath=@signature/xxxxxxx,ga:pagePath=@signature/xxxxxxx,ga:pagePath=@signature/xxxxxxx,ga:pagePath=@signature/xxxxxxx'
-    
-            }]                                    
+            "filtersExpression":'ga:pagePath=@upstore'
+
+            }]
         }
 
          ).execute()
@@ -57,37 +56,69 @@ for report in response.get('reports', []):
 
         for header, dimension in zip(dimensionHeaders, dimensions):
                   dim.append(dimension)
- 
+
 
 
  #Sort Data
 dim.reverse()
 
-df = pd.DataFrame()
-df["pagePath"] = dim
+df = pd.DataFrame (dim, columns = ['domain'])
+
+# conexão com o banco
+conn = pyodbc.connect(co.conn)
+quoted = urllib.parse.quote_plus(co.conn)
+engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
+
+k_upstore = co.Key_Upstore
 
 
-def truncate_table():
-  with pyodbc.connect(co.conn) as cnx:
-      cursor = cnx.cursor()
-      sql = f"""truncate table GetLeads"""  
+def setUpstore(upstore):
+  
+   with conn as cnx:
+    cursor = cnx.cursor()
+    update_up = f"update InstallFilterDomain set upstore = '{upstore}' where upstore is null" 
+    cursor.execute(update_up)
+    
 
-      cursor.execute(sql)
+
+def setDomain():
+  
+  with conn as cnx:
+    cursor = cnx.cursor()
+    update_d = f""" update InstallFilterDomain
+                    set domain = replace(SUBSTRING(domain, 0, CharIndex('#', domain) ), '.teste.com/', '') """
+    cursor.execute(update_d)
+    return update_d
 
 
-def get_domain():   
-  with pyodbc.connect(co.conn) as cnx:
-    for count_str in dim:
-      if '.teste.com' in count_str:
-        find_str = str.rfind(count_str, '.teste.com')
-        value_str = count_str[:find_str] 
-
+def set_main():
+    with conn as cnx:
         cursor = cnx.cursor()
-        sql = f""" 
-        insert into GetLeads (domain)
-        VALUES('{value_str}')"""  
+        sql = f"delete from InstallFilterDomain"
         cursor.execute(sql)
-        cursor.close()
+
+    for up in k_upstore:    
+        words = df[df['domain'].str.contains(up)] 
+        words.to_sql('InstallFilterDomain', if_exists='append', con=engine)
+
+        # update InstallFilterDomain upstore is null (=up)
+        setUpstore(up)
+    #update InstallFilterDomain set domain 
+    setDomain()
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
