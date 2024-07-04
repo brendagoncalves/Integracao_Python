@@ -8,8 +8,8 @@
   }, 
 
   "Email_config": {
-        "Email_sender": "brenda.teste@gmail.com",
-        "Email_receiver": "brenda.teste@gmail.com",
+        "Email_sender": "teste@gmail.com",
+        "Email_receiver": "teste@gmail.com",
         "Password_sender": "xxxxxxxxxxxxx"
   }
 
