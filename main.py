@@ -1,13 +1,12 @@
 
-import analytics_connection 
-import export_archive as u
-import analytics_tst as a
+import analytics_connection as a
+import export as t
 
 def main():
-    a.truncate_table()
-    a.get_domain()
-    u.export_xlsx()
-    
+    a.set_main()
+    t.export_xlsx()
   
 if __name__ == '__main__':
     main()
+
+
