@@ -5,17 +5,15 @@ import connection as c
 
 
 
-period = datetime.datetime.now()
-
 
 def data_count():
 
     with pyodbc.connect(c.conn) as cnx:
         cursor = cnx.cursor()
         sql = """SELECT
-               count(distinct Domain) 
+               count(domain) 
                FROM
-                  GetLeads """
+                  InstallFilterDomain """
 
         cursor.execute(sql)
 
@@ -25,3 +23,4 @@ def data_count():
             list_result.append(row[0])
         return(list_result)
 
+count_dt = data_count()
